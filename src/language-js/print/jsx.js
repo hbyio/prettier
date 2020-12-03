@@ -618,6 +618,11 @@ function printJsxOpeningElement(path, options, print) {
         attr.value.value.includes("\n")
     );
 
+  const attributeLine =
+  options.singleAttributePerLine && n.attributes.length > 1
+    ? hardline
+    : line;
+
   return group(
     concat([
       "<",
@@ -625,9 +630,9 @@ function printJsxOpeningElement(path, options, print) {
       path.call(print, "typeParameters"),
       concat([
         indent(
-          concat(path.map((attr) => concat([line, print(attr)]), "attributes"))
+          concat(path.map((attr) => concat([attributeLine, print(attr)]), "attributes"))
         ),
-        n.selfClosing ? line : bracketSameLine ? ">" : softline,
+        n.selfClosing ? attributeLine : bracketSameLine ? ">" : softline,
       ]),
       n.selfClosing ? "/>" : bracketSameLine ? "" : ">",
     ]),
