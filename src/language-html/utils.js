@@ -137,6 +137,7 @@ function isScriptLikeTag(node) {
   return (
     node.type === "element" &&
     (node.fullName === "script" ||
+      node.fullName === "template" ||
       node.fullName === "style" ||
       node.fullName === "svg:style" ||
       (isUnknownNamespace(node) &&
