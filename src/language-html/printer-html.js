@@ -705,6 +705,85 @@ function printAttributes(path, options, print) {
       : print(attributePath);
   }, "attrs");
 
+  /** =======================
+   Start attribute ordering
+   ========================== */
+  // The main attrs that should always stays on top of the attrs list
+  const mainAttrOrder = [
+    "v-if",
+    "v-else",
+    "v-else-if",
+    "v-show",
+    "v-for",
+    "v-slot",
+    "v-model",
+    "v-html",
+    "id",
+    "class",
+    ":class",
+    "style",
+    ":style",
+    "name",
+    "key",
+    "ref",
+    "is",
+    "slot",
+    "slot-scope",
+    "scope",
+  ];
+  // Extract the attribute name from the node
+  let getAttributeName = (attr) => {
+    let fullAttr = attr.type == "concat" ? attr.parts[0] : attr;
+    return fullAttr.split("=")[0];
+  };
+
+  // Order the attributes by our rules
+  printedAttributes.sort((fullAttr1, fullAttr2) => {
+    let attr1 = getAttributeName(fullAttr1);
+    let attr2 = getAttributeName(fullAttr2);
+
+    // Main attrs ( v-if, v-for, class ) comes first
+    let attr1Order = mainAttrOrder.indexOf(attr1);
+    let attr2Order = mainAttrOrder.indexOf(attr2);
+    if (attr1Order > -1 && attr2Order == -1) {
+      return -1;
+    }
+    if (attr1Order == -1 && attr2Order > -1) {
+      return 1;
+    }
+    if (attr1Order > -1 || attr2Order > -1) {
+      return attr1Order - attr2Order;
+    }
+
+    // Event handlers comes last
+    let attr1Event = attr1[0] == "@" ? attr1.slice(1) : null;
+    let attr2Event = attr2[0] == "@" ? attr2.slice(1) : null;
+    if (attr1Event && !attr2Event) {
+      return 1;
+    }
+    if (!attr1Event && attr2Event) {
+      return -1;
+    }
+    if (attr1Event && attr2Event) {
+      attr1 = attr1Event;
+      attr2 = attr2Event;
+    }
+
+    // Remove the colons from binded attribues
+    if (attr1[0] == ":") {
+      attr1 = attr1.slice(1);
+    }
+    if (attr2[0] == ":") {
+      attr2 = attr2.slice(1);
+    }
+
+    // Order alphabetically the remaining attrs ( noeither main attr nor event handler )
+    return attr1.localeCompare(attr2);
+  });
+  /** =======================
+   End attribute ordering
+   ========================== */
+
   const forceNotToBreakAttrContent =
     node.type === "element" &&
     node.fullName === "script" &&
