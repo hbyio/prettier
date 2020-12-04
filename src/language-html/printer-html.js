@@ -299,6 +299,7 @@ function genericPrint(path, options, print) {
                           groupId: attrGroupId,
                         })
                       : (isScriptLikeTag(node) ||
+                          node.fullName === "template" ||
                           isVueCustomBlock(node, options)) &&
                         node.parent.type === "root" &&
                         options.parser === "vue" &&
